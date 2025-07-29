@@ -1,27 +1,57 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
 	"log"
+	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/nacen-dev/gator/internal/config"
+	"github.com/nacen-dev/gator/internal/database"
 )
+
+type state struct {
+	config *config.Config
+	db     *database.Queries
+}
 
 func main() {
 	cfg, err := config.Read()
+
 	if err != nil {
 		log.Fatalf("error reading config: %v", err)
 	}
-	fmt.Printf("Read config: %+v\n", cfg)
 
-	err = cfg.SetUser("vincent")
+	db, err := sql.Open("postgres", cfg.DbUrl)
 	if err != nil {
-		log.Fatalf("couldn't set the user provided: %v", err)
+		log.Fatalf("unable to connect to the database")
+	}
+	dbQueries := database.New(db)
+
+	s := state{
+		config: &cfg,
+		db:     dbQueries,
 	}
 
-	cfg, err = config.Read()
-	if err != nil {
-		log.Fatalf("error reading the config: %v", err)
+	commands := commands{
+		RegisteredCommands: map[string]func(*state, command) error{},
 	}
-	fmt.Printf("Read the config again: %+v\n", cfg)
+	commands.Register("login", HandlerLogin)
+	commands.Register("register", HandlerRegister)
+
+	if len(os.Args) < 2 {
+		log.Fatal("Usage: cli <command> [args...]")
+	}
+
+	commandName := os.Args[1]
+	commandArgs := os.Args[2:]
+
+	err = commands.Run(&s, command{
+		Name: commandName,
+		Args: commandArgs,
+	})
+
+	if err != nil {
+		log.Fatalf("unable to run the command")
+	}
 }
