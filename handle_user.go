@@ -43,7 +43,7 @@ func HandlerLogin(s *state, cmd command) error {
 		return fmt.Errorf("usage: %s <name>", cmd.Name)
 	}
 	userName := cmd.Args[0]
-	user, err := s.db.GetUser(context.Background(), userName)
+	user, err := s.db.GetUserByName(context.Background(), userName)
 	if err != nil {
 		return fmt.Errorf("user %s doesn't exist", userName)
 	}

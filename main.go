@@ -40,6 +40,9 @@ func main() {
 	commands.Register("register", HandlerRegister)
 	commands.Register("reset", HandlerReset)
 	commands.Register("users", HandlerGetUsers)
+	commands.Register("agg", handlerAgg)
+	commands.Register("addfeed", handlerAddFeed)
+	commands.Register("feeds", handlerGetFeeds)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")
@@ -54,6 +57,7 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatalf("unable to run the command")
+
+		log.Fatalf("unable to run the command %v", err.Error())
 	}
 }
