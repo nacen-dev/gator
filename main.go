@@ -41,10 +41,11 @@ func main() {
 	commands.Register("reset", HandlerReset)
 	commands.Register("users", HandlerGetUsers)
 	commands.Register("agg", handlerAgg)
-	commands.Register("addfeed", handlerAddFeed)
+	commands.Register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	commands.Register("feeds", handlerGetFeeds)
-	commands.Register("follow", handlerFollowFeed)
-	commands.Register("following", handlerGetFeedFollowsForCurrentUser)
+	commands.Register("follow", middlewareLoggedIn(handlerFollowFeed))
+	commands.Register("following", middlewareLoggedIn(handlerGetFeedFollowsForCurrentUser))
+	commands.Register("unfollow", middlewareLoggedIn(handlerUnfollowFeed))
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")

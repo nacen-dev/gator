@@ -9,17 +9,12 @@ import (
 	"github.com/nacen-dev/gator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 2 {
 		return fmt.Errorf("usage: %s <feed_name> <feed_url>", cmd.Name)
 	}
 	feedName := cmd.Args[0]
 	feedUrl := cmd.Args[1]
-
-	user, err := s.db.GetUserByName(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("unable to get the current user: %v", s.config.CurrentUserName)
-	}
 
 	feed, err := s.db.AddFeed(context.Background(), database.AddFeedParams{
 		ID:        uuid.New(),

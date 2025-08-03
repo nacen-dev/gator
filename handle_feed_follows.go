@@ -9,15 +9,11 @@ import (
 	"github.com/nacen-dev/gator/internal/database"
 )
 
-func handlerFollowFeed(s *state, cmd command) error {
+func handlerFollowFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("usage: %s <feed_url>", cmd.Name)
 	}
 	feedUrl := cmd.Args[0]
-	user, err := s.db.GetUserByName(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("unable to get the user to be added for the feed")
-	}
 
 	feed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
 	if err != nil {
@@ -41,12 +37,7 @@ func handlerFollowFeed(s *state, cmd command) error {
 	return nil
 }
 
-func handlerGetFeedFollowsForCurrentUser(s *state, cmd command) error {
-	user, err := s.db.GetUserByName(context.Background(), s.config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("unable to get the user")
-	}
-
+func handlerGetFeedFollowsForCurrentUser(s *state, cmd command, user database.User) error {
 	feeds, err := s.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		return fmt.Errorf("couldn't get the list of followed feeds: %w", err)
@@ -62,5 +53,25 @@ func handlerGetFeedFollowsForCurrentUser(s *state, cmd command) error {
 		fmt.Printf("* Feed:          %s\n", feed.FeedName)
 	}
 
+	return nil
+}
+
+func handlerUnfollowFeed(s *state, cmd command, user database.User) error {
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("usage: %s <feed_url>", cmd.Name)
+	}
+	feedUrl := cmd.Args[0]
+
+	feed, err := s.db.GetFeedByUrl(context.Background(), feedUrl)
+	if err != nil {
+		return fmt.Errorf("unable to retrieve feed to unfollow")
+	}
+	err = s.db.DeleteFeedFollowForUser(context.Background(), database.DeleteFeedFollowForUserParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to unfollow the feed for user: %v", user.Name)
+	}
 	return nil
 }

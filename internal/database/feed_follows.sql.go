@@ -12,6 +12,22 @@ import (
 	"github.com/google/uuid"
 )
 
+const deleteFeedFollowForUser = `-- name: DeleteFeedFollowForUser :exec
+
+DELETE FROM feed_follows
+WHERE feed_follows.user_id = $1 AND feed_follows.feed_id = $2
+`
+
+type DeleteFeedFollowForUserParams struct {
+	UserID uuid.UUID
+	FeedID uuid.UUID
+}
+
+func (q *Queries) DeleteFeedFollowForUser(ctx context.Context, arg DeleteFeedFollowForUserParams) error {
+	_, err := q.db.ExecContext(ctx, deleteFeedFollowForUser, arg.UserID, arg.FeedID)
+	return err
+}
+
 const followFeed = `-- name: FollowFeed :one
 WITH inserted_feed_follow AS (
   INSERT INTO feed_follows (id, created_at, updated_at, user_id, feed_id)
