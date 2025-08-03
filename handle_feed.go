@@ -20,6 +20,7 @@ func handlerAddFeed(s *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("unable to get the current user: %v", s.config.CurrentUserName)
 	}
+
 	feed, err := s.db.AddFeed(context.Background(), database.AddFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
@@ -30,6 +31,17 @@ func handlerAddFeed(s *state, cmd command) error {
 	})
 	if err != nil {
 		return fmt.Errorf("couldn't create feed: %w", err)
+	}
+
+	_, err = s.db.FollowFeed(context.Background(), database.FollowFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		FeedID:    feed.ID,
+		UserID:    user.ID,
+	})
+	if err != nil {
+		return fmt.Errorf("unable to follow the feed created: %w", err)
 	}
 
 	fmt.Println("Feed created successfully:")
