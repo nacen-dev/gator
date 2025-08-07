@@ -61,7 +61,6 @@ func main() {
 	})
 
 	if err != nil {
-
 		log.Fatalf("unable to run the command %v", err.Error())
 	}
 }
